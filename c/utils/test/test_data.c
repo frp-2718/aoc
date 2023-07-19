@@ -166,10 +166,9 @@ void test_list_destroy(void) {
     t_assert(l == NULL);
 }
 
-// TODO: char *list_to_string(List *l)
 void test_list_print(void) {
     List *l = list_new(int);
-    printf("[9, 8, 7, 6, 5, 4, 3, 2, 1, 0] <-- should be\n");
+    printf("[9, 8, 7, 6, 5, 4, 3, 2, 1, 0]\n");
     for (size_t i = 0; i < 10; i++) {
         int n = (int)i;
         list_insertl(l, (void *)&n);
@@ -185,6 +184,33 @@ void test_list_string(void) {
     }
 
     list_print(l, print_string, ',');
+
+    list_destroy(&l);
+}
+
+void test_list_remove(void) {
+    List *l = list_create(sizeof(int));
+    int data = 8;
+    int res = list_remove(l, (void *)&data);
+    t_assert(res == -1);
+
+    list_insertl(l, (void *)&data);
+    res = list_remove(l, (void *)&data);
+    t_assert(res == 0);
+    t_assert(list_len(l) == 0);
+
+    list_destroy(&l);
+}
+
+void test_list_lookup(void) {
+    List *l = list_create(sizeof(int));
+    int data = 8;
+    bool res = list_lookup(l, (void *)&data);
+    t_assert(res == false);
+
+    list_insertl(l, (void *)&data);
+    res = list_lookup(l, (void *)&data);
+    t_assert(res == true);
 
     list_destroy(&l);
 }
@@ -240,6 +266,7 @@ void test_stack_destroy(void) {
     t_assert(s == NULL);
 }
 
+// TODO: test printf output
 void test_stack_print(void) {
     Stack *s = stack_create(sizeof(int));
     for (size_t i = 0; i < 5; i++) {
@@ -247,7 +274,7 @@ void test_stack_print(void) {
         stack_push(s, (void *)&n);
     }
 
-    printf("[4, 3, 2, 1, 0] <-- should be\n");
+    printf("[4, 3, 2, 1, 0]\n");
     stack_print(s, print_int, ',');
 
     stack_destroy(&s);
@@ -267,6 +294,8 @@ int main(void) {
     test_list_destroy();
     test_list_print();
     test_list_string();
+    test_list_lookup();
+    test_list_remove();
 
     test_stack_create();
     test_stack_len();
