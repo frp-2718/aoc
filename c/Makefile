@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS = -Wall -Wextra -pedantic -Werror -std=c17 -g
 VPATH = utils
-EXE = 14
+EXE = 15
 OBJ = $(EXE).o data.o input.o
 
 .PHONY: clean

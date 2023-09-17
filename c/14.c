@@ -26,7 +26,6 @@ typedef struct {
 
 Coord to_coord(char *str);
 Interval *parse_input(char **input, Dimension *dim);
-void print_map(size_t height, size_t width, char map[height][width]);
 int simulation(size_t height, size_t width, char map[height][width], size_t offset);
 void init_map(size_t height, size_t width, char map[height][width]);
 void build_walls(size_t height, size_t width, char map[height][width], size_t nw, Interval *walls, int offset);
@@ -45,6 +44,8 @@ int main(int argc, char* argv[]) {
 
     Dimension dim = { .min_x = INT_MAX, .min_y = 0, .max_x = 0, .max_y = 0, .nw = 0};
     Interval *walls = parse_input(input, &dim);
+
+    free_lines(input);
 
     // part 1
     size_t height = dim.max_y - dim.min_y + 1;
