@@ -1,4 +1,6 @@
-# Advent of code 2022
+# Advent of code
+
+## 2022
 
 [Advent of code 2022](https://adventofcode.com/2022)
 
@@ -9,7 +11,7 @@
 >
 > _-- Kyle Shanahan_
 
-## Useful resources
+### Useful resources
 
 Some references from which I took more or less heavy inspiration at some point.
 
@@ -19,3 +21,8 @@ Some references from which I took more or less heavy inspiration at some point.
 - Kyle Loudon, _Mastering algorithms with C_, O'Reilly, 1999
 - [cgds lib by yagu0](https://github.com/yagu0/cgds/)
 
+## 2023
+
+[Advent of code 2023](https://adventofcode.com/2023)
+
+In R : 1

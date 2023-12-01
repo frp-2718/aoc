@@ -1,4 +1,5 @@
 .DS_Store
 ownerproof
-tags
-current/
+**/tags
+**/current
+.Rproj.user
