@@ -1,8 +1,7 @@
 library(stringr)
 
-f <- file("01.txt", "r")
-input <- readLines(f)
-close(f)
+input1 <- readLines("test-inputs/01-test.txt")
+input2 <- readLines("test-inputs/01-test-2.txt")
 
 spelled_out_digits <- c("one" = "o1e", "two" = "t2o", "three" = "t3e", "four" = "f4r",
                         "five" = "f5e", "six" = "s6x", "seven" = "s7n", "eight" = "e8t",
@@ -14,5 +13,8 @@ extract_value = function(str) {
   return(ints[[1]] * 10 + tail(ints, 1))
 }
 
-part1 <- Reduce("+", lapply(input, extract_value), 0)
-part2 <- Reduce("+", lapply(str_replace_all(input, spelled_out_digits), extract_value), 0)
+part1 <- Reduce("+", lapply(input1, extract_value), 0)
+part2 <- Reduce("+", lapply(str_replace_all(input2, spelled_out_digits), extract_value), 0)
+
+print(part1)
+print(part2)

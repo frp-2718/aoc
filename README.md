@@ -25,4 +25,8 @@ Some references from which I took more or less heavy inspiration at some point.
 
 [Advent of code 2023](https://adventofcode.com/2023)
 
-In R : 1
+In R : 1-2
+
+> Turn your wounds into wisdom.
+>
+> _-- Oprah Winfrey_

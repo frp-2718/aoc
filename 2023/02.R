@@ -2,9 +2,7 @@ library(purrr)
 library(readr)
 library(stringr)
 
-f <- file("02.txt", "r")
-input <- readLines(f)
-close(f)
+input <- readLines("test-inputs/02-test.txt")
 
 records <- strsplit(input, "; ")
 
@@ -48,3 +46,6 @@ sum_power <- function(games) {
 
 part1 <- sum_possible(possible(games))
 part2 <- sum_power(games)
+
+print(part1)
+print(part2)
