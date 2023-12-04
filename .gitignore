@@ -2,4 +2,6 @@
 ownerproof
 **/tags
 **/current
+**/.Rproj.user
+strutils/
 .Rproj.user
