@@ -106,7 +106,7 @@ map_range_layer <- function(r, layer) {
   return(list(r))
 }
 
-map_rangess <- function(ranges, layer) {
+map_ranges <- function(ranges, layer) {
   res <- list()
   for (r in ranges) {
     res <- c(res, map_range_layer(r, layer))
@@ -122,9 +122,9 @@ concat_lists <- function(l1, l2) {
 }
 
 find_all_locations <- function(ranges, layers) {
-  res <- map_rangess(ranges, layers[[1]])
+  res <- map_ranges(ranges, layers[[1]])
   for (layer in layers[-c(1)]) {
-    res <- map_rangess(res, layer)
+    res <- map_ranges(res, layer)
   }
   return (res)
 }
