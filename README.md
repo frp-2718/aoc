@@ -25,7 +25,7 @@ Some references from which I took more or less heavy inspiration at some point.
 
 [Advent of code 2023](https://adventofcode.com/2023)
 
-In R : 1-5
+In R : 1-6
 
 > Turn your wounds into wisdom.
 >
