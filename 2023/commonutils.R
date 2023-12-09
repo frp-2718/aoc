@@ -31,8 +31,45 @@ swap <- function(l, i1, i2) {
   return(l)
 }
 
-comp <- function(a, b) { return(a - b) }
+gcd <- function(a, b) {
+  a <- abs(a)
+  b <- abs(b)
+  if (a < b) {
+    tmp <- a
+    a <- b
+    b <- tmp
+  }
+  while (b != 0) {
+    t <- b
+    b <- a %% b
+    a <- t
+  }
+  return(a)
+}
 
-l <- c(4, 5, 1, 3, 9, 2, 6, 8, 7)
+gcd_v <- function(v) {
+  if (length(v) == 0) {
+    return(0)
+  } 
+  res <- 0
+  for (n in v) {
+    res <- gcd(res, n)
+  }
+  return(res)
+}
 
-custom_sort(l, comp)
+lcm <- function(a, b) {
+  if (a == 0 && b == 0) return (0)
+  return(abs(a) * (abs(b) / gcd(a, b)))
+}
+
+lcm_v <- function(v) {
+  if (length(v) == 0) {
+    return(0)
+  } 
+  res <- 1
+  for (n in v) {
+    res <- lcm(res, n)
+  }
+  return(res)
+}
