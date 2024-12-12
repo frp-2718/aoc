@@ -30,3 +30,13 @@ In R : 1-11
 > Turn your wounds into wisdom.
 >
 > _-- Oprah Winfrey_
+
+## 2024
+
+[Advent of code 2024](https://adventofcode.com/2024)
+
+In Python : 1-6
+
+> Every good cause is worth some inefficiency.
+>
+> _-- Paul Samuelson_
