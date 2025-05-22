@@ -1,4 +1,9 @@
 import re
+import sys
+
+if len(sys.argv) != 2:
+    print(f"Usage: python3 {sys.argv[0]} <file>")
+    sys.exit(1)
 
 
 def sum_of_mults(line):
@@ -9,7 +14,7 @@ def sum_of_mults(line):
 
 result_2 = 0
 
-with open("test-inputs/03-test-2.txt", "r") as file:
+with open(sys.argv[1], "r") as file:
     content = "do()" + file.read()
     # part 1
     result_1 = sum_of_mults(content)

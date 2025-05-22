@@ -1,4 +1,9 @@
 from functools import cmp_to_key
+import sys
+
+if len(sys.argv) != 2:
+    print(f"Usage: python3 {sys.argv[0]} <file>")
+    sys.exit(1)
 
 
 def compare(a, b):
@@ -18,7 +23,7 @@ def ordered(update):
 rules = {}
 updates = []
 
-with open("test-inputs/05-test.txt", "r") as file:
+with open(sys.argv[1], "r") as file:
     for line in file:
         if "|" in line:
             before, after = line.split("|")

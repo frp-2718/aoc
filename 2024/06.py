@@ -1,4 +1,9 @@
 from copy import deepcopy
+import sys
+
+if len(sys.argv) != 2:
+    print(f"Usage: python3 {sys.argv[0]} <file>")
+    sys.exit(1)
 
 
 def path(pos, grid):
@@ -30,7 +35,7 @@ def path(pos, grid):
 
 grid = []
 start = ()
-with open("test-inputs/06-test.txt", "r") as file:
+with open(sys.argv[1], "r") as file:
     for line in file:
         grid.append(list(line.strip()))
 

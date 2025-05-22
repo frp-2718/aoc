@@ -1,7 +1,13 @@
+import sys
+
+if len(sys.argv) != 2:
+    print(f"Usage: python3 {sys.argv[0]} <file>")
+    sys.exit(1)
+
 l1 = []
 l2 = []
 
-with open("test-inputs/01-test.txt", "r") as file:
+with open(sys.argv[1], "r") as file:
     for line in file:
         values = line.split()
         l1.append(int(values[0]))

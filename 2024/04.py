@@ -1,3 +1,10 @@
+import sys
+
+if len(sys.argv) != 2:
+    print(f"Usage: python3 {sys.argv[0]} <file>")
+    sys.exit(1)
+
+
 # part 1
 def diagonals(s):
     diag1 = ["" for _ in range(len(s) + len(s[0]) - 1)]
@@ -9,7 +16,7 @@ def diagonals(s):
     return (diag1, diag2)
 
 
-with open("test-inputs/04-test.txt", "r") as file:
+with open(sys.argv[1], "r") as file:
     h_strings = [line.strip() for line in file]
 
 vertical_strings = ["".join(col) for col in zip(*h_strings)]

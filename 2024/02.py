@@ -1,3 +1,10 @@
+import sys
+
+if len(sys.argv) != 2:
+    print(f"Usage: python3 {sys.argv[0]} <file>")
+    sys.exit(1)
+
+
 def safe(report, tolerance):
     if len(report) == 1:
         return True
@@ -24,7 +31,7 @@ def safe_tolerance(report):
 nsafe = 0
 nsafe_tolerance = 0
 
-with open("test-inputs/02-test.txt", "r") as file:
+with open(sys.argv[1], "r") as file:
     for line in file:
         report = list(map(int, line.split()))
         if safe(report, False):

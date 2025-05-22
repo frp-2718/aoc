@@ -1,4 +1,9 @@
 import math
+import sys
+
+if len(sys.argv) != 2:
+    print(f"Usage: python3 {sys.argv[0]} <file>")
+    sys.exit(1)
 
 
 def concat_int(a, b):
@@ -30,7 +35,7 @@ def calibration(equations, part2=False):
 
 
 equations = []
-with open("test-inputs/07-test.txt", "r") as file:
+with open(sys.argv[1], "r") as file:
     for line in file:
         total, numbers = line.split(": ")
         equations.append((int(total), [int(n) for n in numbers.split()]))
