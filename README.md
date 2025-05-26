@@ -35,7 +35,7 @@ In R : 1-11
 
 [Advent of code 2024](https://adventofcode.com/2024)
 
-In Python : 1-8
+In Python : 1-9
 
 > Every good cause is worth some inefficiency.
 >
