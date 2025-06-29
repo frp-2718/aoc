@@ -1,11 +1,16 @@
+/*
+ * Utility data structures implemented for learning purposes only and not meant
+ * to be used in any production environment.
+ */
+
+#include <limits.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "data.h"
-
-#define STR_CHUNK 1024
 
 // List
 typedef struct ListItem {
@@ -19,6 +24,12 @@ struct List {
     ListItem *last;
     size_t len;
     size_t data_size;
+};
+
+// Iterator
+struct Iterator {
+    List *l;
+    ListItem *current;
 };
 
 static ListItem *list_search(List *l, const void *const data) {
@@ -101,7 +112,7 @@ List *list_insertl(List *l, const void *const data) {
 
 void list_erase(List *l) {
     ListItem *item = l->first;
-    ListItem *tmp = NULL;;
+    ListItem *tmp = NULL;
     while (item) {
         tmp = item->next;
         free(item->data);
@@ -113,8 +124,29 @@ void list_erase(List *l) {
     l->len = 0;
 }
 
+void list_erase_data(List *l, void(*del_func)(void *)) {
+    ListItem *item = l->first;
+    ListItem *tmp = NULL;
+    while (item) {
+        tmp = item->next;
+        del_func(item->data);
+        free(item->data);
+        free(item);
+        item = tmp;
+    }
+    l->first = NULL;
+    l->last = NULL;
+    l->len = 0;
+}
+
 void list_destroy(List **l) {
     list_erase(*l);
+    free(*l);
+    *l = NULL;
+}
+
+void list_destroy_data(List **l, void(*del_func)(void *)) {
+    list_erase_data(*l, del_func);
     free(*l);
     *l = NULL;
 }
@@ -198,74 +230,269 @@ bool list_lookup(List *l, const void *const data) {
     return res ? true : false;
 }
 
+struct Iterator *new_iterator(List *l) {
+    struct Iterator *it = malloc(sizeof(struct Iterator));
+    if (!it) return NULL;
+    it->l = l;
+    it->current = l->first;
+    return it;
+}
+
+void *iterator_next(struct Iterator *it) {
+    void *elem = NULL;
+    if (it->current) {
+        elem = it->current->data;
+        it->current = it->current->next;
+    }
+    return elem;
+}
+
+void iterator_destroy(struct Iterator **it) {
+    free(*it);
+    *it = NULL;
+}
+
 // Hash table
+#define HT_DEFAULT_CAPACITY 2048
+#define HT_MAX_LOAD 0.7f
+
 typedef struct Hashtbl {
-    size_t buckets;
-    int (*h)(const void *key);
-    bool (*match)(const void *key1, const void *key2, size_t size);
-    void (*destroy)(void *data);
+    Entry **buckets;
+    size_t capacity;
     size_t size;
-    size_t data_size;
-    List **table;
+    void (*destroy)(void *data);
 } Hashtbl;
 
-int hashtbl_init(Hashtbl *htbl, int buckets,
-        size_t data_size,
-        int (*h)(const void *key),
-        bool (*match)(const void *key1, const void *key2, size_t size),
-        void (*destroy)(void *data)) {
-    if ((htbl->table = malloc(buckets * sizeof(List *))) == NULL)
-        return -1;
+static uint32_t djb2_hash(const char* key)
+{
+    uint32_t h = 5381u;
+    while (*key) {
+        h = ((h << 5) + h) + *key;
+        ++key;
+    }
+    return h;
+}
 
-    htbl->buckets = buckets;
-    for (size_t i = 0; i < htbl->buckets; i++) {
-        htbl->table[i] = list_create(data_size);
+static int hashtbl_resize(Hashtbl *ht, size_t new_capacity) {
+    if (!ht || new_capacity == 0) return -1;
+
+    Entry **new_buckets = calloc(new_capacity, sizeof(Entry *));
+    if (!new_buckets) return -1;
+
+    for (size_t i = 0; i < ht->capacity; ++i) {
+        Entry *entry = ht->buckets[i];
+        while (entry) {
+            Entry *next = entry->next;
+            size_t new_idx = entry->hash % new_capacity;
+            entry->next = new_buckets[new_idx];
+            new_buckets[new_idx] = entry;
+            entry = next;
+        }
     }
 
-    htbl->h = h;
-    htbl->match = match;
-    htbl->destroy = destroy;
-
-    htbl->size = 0;
-    htbl->data_size = data_size;
+    free(ht->buckets);
+    ht->buckets = new_buckets;
+    ht->capacity = new_capacity;
 
     return 0;
 }
 
-void hashtbl_destroy(Hashtbl *htbl) {
-    for (size_t i = 0; i < htbl->buckets; i++) {
-        list_destroy(&htbl->table[i]);
-    }
-    free(htbl->table);
-    memset(htbl, 0, sizeof(Hashtbl));
+Hashtbl *hashtbl_create(void) {
+    return malloc(sizeof(Hashtbl));
 }
 
-int hashtbl_insert(Hashtbl *htbl, void *data) {
-    void *temp = (void *)data;
-    if (hashtbl_lookup(htbl, &temp))
-        return 1;
+int hashtbl_init(Hashtbl *ht, void (*destroy)(void *data)) {
+    if (!ht) return -1;
 
-    int bucket = htbl->h(data) % htbl->buckets;
+    ht->buckets = calloc(HT_DEFAULT_CAPACITY, sizeof(Entry *));
+    if (!ht->buckets) return -1;
 
-    htbl->table[bucket] = list_insertl(htbl->table[bucket], data);
-    if (!htbl->table[bucket])
-        return -1;
-
-    htbl->size++;
+    ht->capacity = HT_DEFAULT_CAPACITY;
+    ht->size = 0;
+    ht->destroy = destroy;
 
     return 0;
 }
 
-int hashtbl_remove(Hashtbl *htbl, void **data) {
-    int bucket = htbl->h(*data) % htbl->buckets;
-    if (list_remove(htbl->table[bucket], *data) == 0) {
-        htbl->size--;
-        return 0;
+void hashtbl_destroy(Hashtbl *ht) {
+    if (!ht) return;
+
+    for (size_t i = 0; i < ht->capacity; ++i) {
+        Entry *entry = ht->buckets[i];
+        while (entry) {
+            Entry *next = entry->next;
+            free(entry->key);
+            if (ht->destroy) {
+                ht->destroy(entry->value);
+            }
+            free(entry);
+            entry = next;
+        }
     }
+    free(ht->buckets);
+    ht->buckets = NULL;
+    ht->capacity = 0;
+    ht->size = 0;
+    ht->destroy = NULL;
+
+    free(ht);
+    ht = NULL;
+}
+
+int hashtbl_insert(Hashtbl *ht, const char *key, void *value) {
+    if (!ht || !key) return -1;
+
+    if (ht->size + 1 > ht->capacity * HT_MAX_LOAD) {
+        if (hashtbl_resize(ht, ht->capacity * 2) != 0) {
+            return -1;
+        }
+    }
+
+    uint32_t hash = djb2_hash(key);
+    size_t idx = hash % ht->capacity;
+
+    Entry *current = ht->buckets[idx];
+    while(current) {
+        if (strcmp(current->key, key) == 0) {
+            if (ht->destroy) {
+                ht->destroy(current->value);
+            }
+            current->value = value;
+            return 0;
+        }
+        current = current->next;
+    }
+
+    Entry *new_entry = malloc(sizeof(Entry));
+    if (!new_entry) return -1;
+
+    new_entry->key = strdup(key);
+    if (!new_entry->key) {
+        free(new_entry);
+        return -1;
+    }
+
+    new_entry->value = value;
+    new_entry->hash = hash;
+    new_entry->next = ht->buckets[idx];
+
+    ht->buckets[idx] = new_entry;
+    ht->size++;
+
+    return 0;
+}
+
+int hashtbl_remove(Hashtbl *ht, const char *key) {
+    if (!ht || !key) return -1;
+
+    uint32_t hash = djb2_hash(key);
+    size_t idx = hash % ht->capacity;
+
+    Entry *current = ht->buckets[idx];
+    Entry *prev = NULL;
+
+    while (current) {
+        if (strcmp(current->key, key) == 0) {
+            if (prev) {
+                prev->next = current->next;
+            } else {
+                ht->buckets[idx] = current->next;
+            }
+
+            free(current->key);
+            if (ht->destroy) {
+                ht->destroy(current->value);
+            }
+            free(current);
+            ht->size--;
+
+            return 0;
+        }
+        prev = current;
+        current = current->next;
+    }
+
     return -1;
 }
 
-bool hashtbl_lookup(const Hashtbl *htbl, void **data) {
-    int bucket = htbl->h(*data) % htbl->buckets;
-    return list_lookup(htbl->table[bucket], data);
+void *hashtbl_lookup(const Hashtbl *ht, const char *key) {
+    if (!ht || !key) return NULL;
+
+    uint32_t hash = djb2_hash(key);
+    size_t idx = hash % ht->capacity;
+
+    Entry *current = ht->buckets[idx];
+    while (current) {
+        if (strcmp(current->key, key) == 0) {
+            return current->value;
+        }
+        current = current->next;
+    }
+
+    return NULL;
+}
+
+size_t hashtbl_size(const Hashtbl *ht) {
+    return ht->size;
+}
+
+void hashtbl_foreach(const Hashtbl *ht, void (*callback)(const char *key, void *value)) {
+    if (!ht || !ht->buckets || !callback) return;
+
+    for (size_t i = 0; i < ht->capacity; i++) {
+        Entry *entry = ht->buckets[i];
+        while (entry) {
+            callback(entry->key, entry->value);
+            entry = entry->next;
+        }
+    }
+}
+
+HashtblIterator *new_hashtblIterator(Hashtbl *ht) {
+    HashtblIterator *it = malloc(sizeof(HashtblIterator));
+    if (!it) return NULL;
+    it->ht = ht;
+    it->bucket_index = -1;
+    it->current_entry = NULL;
+    return it;
+}
+
+Entry *hashtblIterator_next(HashtblIterator *it) {
+    if (!it || !it->ht) return NULL;
+
+    if (it->current_entry && it->current_entry->next) {
+        it->current_entry = it->current_entry->next;
+        return it->current_entry;
+    }
+
+    while (++it->bucket_index < it->ht->capacity) {
+        Entry *entry = it->ht->buckets[it->bucket_index];
+        if (entry) {
+            it->current_entry = entry;
+            return it->current_entry;
+        }
+    }
+
+    return NULL;
+}
+
+void hashtblIterator_destroy(HashtblIterator **it) {
+    if (it && *it) {
+        free(*it);
+        *it = NULL;
+    }
+}
+
+void *hashtbl_default_value(void) {
+    char *p = malloc(sizeof(char));
+    if (!p) return NULL;
+    *p = '0';
+    return (void *)p;
+}
+
+void hashtbl_destroy_default_value(void *value) {
+    if (value) {
+        free(value);
+        value = NULL;
+    }
 }

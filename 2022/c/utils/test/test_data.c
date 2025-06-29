@@ -215,6 +215,40 @@ void test_list_lookup(void) {
     list_destroy(&l);
 }
 
+void test_iterator_new(void) {
+    List *l = list_create(sizeof(int));
+    Iterator *it = new_iterator(l);
+    t_assert(it != NULL);
+    iterator_destroy(&it);
+}
+
+void test_iterator_next(void) {
+    List *l = list_create(sizeof(int));
+    for (int i = 0; i < 10; i++) {
+        list_insertl(l, (void *)&i);
+    }
+    t_assert(list_len(l) == 10);
+
+    Iterator *it = new_iterator(l);
+    void *elem = iterator_next(it);
+    int i = 9;
+    while (elem != NULL) {
+        int *n = (int *)elem;
+        t_assert(*n == i);
+        i--;
+        elem = iterator_next(it);
+    }
+
+    iterator_destroy(&it);
+}
+
+void test_iterator_destroy(void) {
+    List *l = list_create(sizeof(int));
+    Iterator *it = new_iterator(l);
+    iterator_destroy(&it);
+    t_assert(it == NULL);
+}
+
 void test_stack_create(void) {
     Stack *s = stack_create(sizeof(double));
     t_assert(s != NULL);
@@ -296,6 +330,10 @@ int main(void) {
     test_list_string();
     test_list_lookup();
     test_list_remove();
+
+    test_iterator_new();
+    test_iterator_next();
+    test_iterator_destroy();
 
     test_stack_create();
     test_stack_len();
